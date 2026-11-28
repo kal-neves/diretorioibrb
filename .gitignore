@@ -6,6 +6,13 @@
 *.key
 
 # Dependências e arquivos gerados
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.uv-cache/
+staticfiles/
 node_modules/
 .next/
 out/

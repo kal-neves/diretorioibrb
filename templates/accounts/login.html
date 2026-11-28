@@ -1,0 +1,12 @@
+{% extends "accounts/base.html" %}
+{% block title %}Entrar | IBRB{% endblock %}
+{% block content %}
+<h1>Entrar</h1>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="hidden" name="next" value="{{ next_url }}">
+  <button type="submit">Entrar</button>
+</form>
+<p>Para entrar, procure a secretaria.</p>
+{% endblock %}

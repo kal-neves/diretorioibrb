@@ -25,10 +25,11 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
+    "accounts.middleware.PrivateSessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "accounts.middleware.AccessMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -56,6 +57,7 @@ DATABASES = {"default": {
     "OPTIONS": {"sslmode": os.environ.get("DB_SSLMODE", "require"), "prepare_threshold": None},
 }}
 AUTH_USER_MODEL = "accounts.Account"
+AUTHENTICATION_BACKENDS = ["accounts.backends.PhoneBackend"]
 AUTH_PASSWORD_VALIDATORS = [{"NAME": "accounts.validators.PasswordPolicy"}]
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Belem"

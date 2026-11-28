@@ -124,9 +124,12 @@ def restore_password(*, operator_id, account_id):
 
 
 @sensitive_variables("current_password", "new_password", "confirmation")
-def change_password(*, account_id, current_password, new_password, confirmation):
+def change_password(*, account_id, current_password, new_password, confirmation,
+                    expected_version=None, authenticated_at=None):
     with transaction.atomic(durable=True):
         account, = locked_accounts(account_id)
+        if expected_version is not None:
+            require_password_session(account, expected_version, authenticated_at)
         if not account.is_active or is_expired_new_account(account):
             raise PermissionDenied("Esta conta não tem acesso permitido.")
         if not account.check_password(current_password):
@@ -135,6 +138,36 @@ def change_password(*, account_id, current_password, new_password, confirmation)
             raise ValidationError({"confirmation": "As senhas não coincidem."})
         validate_password(new_password, account)
         account.set_password(new_password)
+        if expected_version is not None:
+            require_password_session(account, expected_version, authenticated_at)
+        account.must_change_password = False
+        if account.first_password_changed_at is None:
+            account.first_password_changed_at = timezone.now()
+        account.access_version += 1
+        save_account(account)
+    return account
+
+
+def require_password_session(account, expected_version, authenticated_at):
+    from .sessions import account_session_is_current
+
+    if not account_session_is_current(account, expected_version, authenticated_at):
+        raise PermissionDenied("A sessão não permite esta alteração. Entre novamente.")
+
+
+@sensitive_variables("new_password", "confirmation")
+def complete_required_password_change(*, account_id, expected_version, authenticated_at,
+                                      new_password, confirmation):
+    with transaction.atomic(durable=True):
+        account, = locked_accounts(account_id)
+        require_password_session(account, expected_version, authenticated_at)
+        if not account.must_change_password:
+            raise PermissionDenied("Não há troca obrigatória de senha pendente.")
+        if new_password != confirmation:
+            raise ValidationError({"confirmation": "As senhas não coincidem."})
+        validate_password(new_password, account)
+        account.set_password(new_password)
+        require_password_session(account, expected_version, authenticated_at)
         account.must_change_password = False
         if account.first_password_changed_at is None:
             account.first_password_changed_at = timezone.now()

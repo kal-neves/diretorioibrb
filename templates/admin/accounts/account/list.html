@@ -1,0 +1,5 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+{% block object-tools-items %}
+{% if has_add_permission %}<li><a href="{% url 'admin:accounts_account_add' %}" class="addlink">Criar conta</a></li>{% endif %}
+{% endblock %}

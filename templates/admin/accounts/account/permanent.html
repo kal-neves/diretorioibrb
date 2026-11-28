@@ -1,0 +1,7 @@
+{% extends "admin/accounts/account/base.html" %}
+{% block content %}
+<p>Administrador inicial: {{ account.name }}.</p>
+<p>Esta conta é permanente. Não pode ser desativada, deletada ou alterada por esta tela.</p>
+<p><a href="{% url 'accounts:password' %}">Alterar minha senha</a></p>
+<p><a href="{{ list_url }}">Voltar às contas</a></p>
+{% endblock %}

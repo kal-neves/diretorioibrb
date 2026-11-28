@@ -35,6 +35,8 @@ def access_redirect(request, destination, *, status=401):
 def unavailable(request):
     if getattr(request, "password_changed", False):
         message = "A senha foi alterada, mas não foi possível manter a sessão. Entre novamente com a nova senha."
+    elif getattr(request, "operation_committed", False):
+        message = "A operação foi concluída, mas houve uma falha na resposta. Confira a lista antes de tentar novamente. Senhas temporárias não serão exibidas novamente."
     else:
         message = "Não foi possível acessar o sistema agora. Tente novamente mais tarde."
     response = HttpResponse(message, status=503, content_type="text/plain; charset=utf-8")

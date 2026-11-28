@@ -1,0 +1,11 @@
+{% extends "admin/accounts/account/base.html" %}
+{% block content %}
+<p>{{ account.name }}: {{ account.get_username }}</p>
+<p>{{ explanation }}</p>
+<form method="post" data-single-submit>
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">{{ title }}</button>
+  <a href="{{ list_url }}">Cancelar</a>
+</form>
+{% endblock %}

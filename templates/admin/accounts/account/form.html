@@ -1,0 +1,28 @@
+{% extends "admin/accounts/account/base.html" %}
+{% block content %}
+<div id="content-main">
+  {% if creating %}<p>A senha temporária será apresentada para entrega manual.</p>{% endif %}
+  {% if not form.role %}<p>Perfil: Consulta</p>{% endif %}
+  <form method="post" data-single-submit>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="submit-row">
+      <button type="submit">{% if creating %}Criar conta{% else %}Salvar alterações{% endif %}</button>
+      <a href="{{ list_url }}">Cancelar</a>
+    </div>
+  </form>
+  {% if account %}
+  <h2>Operações da conta</h2>
+  <p>Situação: {% if account.is_active %}Ativa{% else %}Desativada{% endif %}.</p>
+  <ul>
+    {% if account.is_active %}
+    <li><a href="{% url 'admin:accounts_account_operation' account.pk 'deactivate' %}">Desativar conta</a></li>
+    {% else %}
+    <li><a href="{% url 'admin:accounts_account_operation' account.pk 'activate' %}">Ativar conta</a></li>
+    {% endif %}
+    {% if can_restore %}<li><a href="{% url 'admin:accounts_account_operation' account.pk 'restore' %}">Restaurar senha</a></li>{% endif %}
+    <li><a href="{% url 'admin:accounts_account_delete' account.pk %}">Deletar conta</a></li>
+  </ul>
+  {% endif %}
+</div>
+{% endblock %}

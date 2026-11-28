@@ -42,7 +42,7 @@ def issue_submission(*, session_key, authenticated_at, operation, binding=""):
     return token
 
 
-def consume_submission(proof, *, operation, binding=""):
+def validate_submission(proof, *, operation, binding=""):
     if not connection.in_atomic_block:
         raise RuntimeError("O formulário deve ser confirmado junto da operação.")
     if not proof.token or len(proof.token) > 100 or not proof.session_key:
@@ -54,7 +54,12 @@ def consume_submission(proof, *, operation, binding=""):
             or not constant_time_compare(submission.session_scope_digest,
                                          digest(f"{proof.session_key}:{binding}", "scope"))):
         raise SubmissionRejected()
-    submission.consumed_at = now
+    return submission
+
+
+def consume_submission(proof, *, operation, binding=""):
+    submission = validate_submission(proof, operation=operation, binding=binding)
+    submission.consumed_at = timezone.now()
     submission.save(update_fields=["consumed_at"])
 
 

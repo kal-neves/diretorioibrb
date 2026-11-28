@@ -38,7 +38,7 @@ class DirectoryServiceTests(TestCase):
         self.assertEqual(entry.search_name, "jose")
         self.assertIsNone(entry.contact_phone)
         self.assertIsNone(entry.birth_month)
-        self.assertFalse(any(field.is_relation for field in Entry._meta.get_fields()))
+        self.assertEqual([field.name for field in Entry._meta.get_fields() if field.is_relation], ["photo"])
         self.assertEqual(Account.objects.count(), 1)
 
     def test_optional_values_normalize_and_can_be_cleared(self):

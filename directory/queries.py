@@ -10,7 +10,7 @@ from .normalization import normalize_name
 
 
 PAGE_SIZE = 20
-DISPLAY_FIELDS = ("id", "name", "category", "contact_phone", "birth_day", "birth_month", "spouse_name")
+DISPLAY_FIELDS = ("id", "name", "category", "contact_phone", "birth_day", "birth_month", "spouse_name", "photo_id")
 
 
 @dataclass(frozen=True)
@@ -22,6 +22,7 @@ class DirectoryCard:
     birth_day: int | None
     birth_month: int | None
     spouse_name: str | None
+    photo_id: object = None
 
     @property
     def category_label(self):

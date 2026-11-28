@@ -13,6 +13,7 @@ __pycache__/
 .ruff_cache/
 .uv-cache/
 staticfiles/
+.private-photos/
 node_modules/
 .next/
 out/

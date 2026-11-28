@@ -14,6 +14,11 @@ def required(name):
 BASE_DIR = Path(__file__).resolve().parents[2]
 SECRET_KEY = required("DJANGO_SECRET_KEY")
 DEBUG = False
+PHOTO_STORAGE_BACKEND = os.environ.get("PHOTO_STORAGE_BACKEND", "disabled")
+PHOTO_STORAGE_ROOT = None
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_STORAGE_KEY = os.environ.get("SUPABASE_STORAGE_KEY", "")
+SUPABASE_PHOTO_BUCKET = os.environ.get("SUPABASE_PHOTO_BUCKET", "")
 ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     "django.contrib.admin.apps.SimpleAdminConfig",
@@ -28,6 +33,7 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "directory.middleware.PhotoRequestLimit",
     "accounts.middleware.PrivateSessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

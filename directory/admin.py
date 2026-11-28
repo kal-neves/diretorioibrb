@@ -15,6 +15,7 @@ from . import services
 from .forms import EntryForm
 from .models import Entry
 from .queries import list_entries
+from .storage import StorageUnavailable
 
 
 @admin.register(Entry, site=site)
@@ -88,7 +89,7 @@ class EntryAdmin(admin.ModelAdmin):
                 operation=operation, binding=str(entry.pk) if entry else "",
             )
         form_class = SubmissionForm if deleting else EntryForm
-        form = form_class(request.POST if request.method == "POST" else None, initial=initial)
+        form = form_class(request.POST if request.method == "POST" else None, request.FILES or None, initial=initial)
         status = 200
         if request.method == "POST" and form.is_valid():
             proof = SubmissionProof(form.cleaned_data["submission_token"], request.session.session_key,
@@ -101,6 +102,9 @@ class EntryAdmin(admin.ModelAdmin):
                     services.update_entry(operator_id=request.user.pk, entry_id=entry.pk, submission=proof, **values)
                 else:
                     services.create_entry(operator_id=request.user.pk, submission=proof, **values)
+            except StorageUnavailable:
+                form.add_error(None, "Não foi possível salvar a foto. A entrada anterior foi preservada. Selecione a foto novamente para tentar salvar.")
+                status = 503
             except ValidationError as error:
                 if getattr(error, "code", None) == "entry_unavailable":
                     raise Http404("Esta entrada não está disponível. Atualize a lista.") from None
@@ -117,7 +121,7 @@ class EntryAdmin(admin.ModelAdmin):
         elif request.method == "POST":
             status = 400
         context = self.context(request, title)
-        context.update(form=form, entry=entry, deleting=deleting)
+        context.update(form=form, entry=entry, deleting=deleting, photo_reselect=bool(request.FILES))
         return TemplateResponse(request, "admin/directory/entry/form.html", context, status=status)
 
     def save_model(self, request, obj, form, change):

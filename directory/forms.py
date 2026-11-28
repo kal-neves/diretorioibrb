@@ -16,3 +16,11 @@ class EntryForm(SubmissionForm):
     birth_day = forms.IntegerField(label="Dia do aniversário", min_value=1, max_value=31, required=False)
     birth_month = forms.IntegerField(label="Mês do aniversário", min_value=1, max_value=12, required=False)
     spouse_name = forms.CharField(label="Cônjuge", max_length=200, required=False)
+    photo = forms.FileField(label="Foto recortada", required=False, widget=forms.FileInput(attrs={"accept": "image/jpeg", "hidden": True}))
+    remove_photo = forms.BooleanField(label="Remover foto atual", required=False)
+
+    def clean(self):
+        cleaned = super().clean()
+        if set(self.files) - {"photo"} or len(self.files.getlist("photo")) > 1:
+            raise forms.ValidationError("Envie apenas uma foto.")
+        return cleaned

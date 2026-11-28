@@ -1,10 +1,44 @@
 from datetime import date
+import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 
 from .normalization import normalize_name
+
+
+class Photo(models.Model):
+    class State(models.TextChoices):
+        STAGED = "STAGED"
+        ATTACHED = "ATTACHED"
+        PENDING_DELETE = "PENDING_DELETE"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    state = models.CharField(max_length=14, choices=State.choices, default=State.STAGED)
+    created_at = models.DateTimeField(default=timezone.now)
+    lease_until = models.DateTimeField(null=True)
+    byte_size = models.PositiveIntegerField(null=True)
+    width = models.PositiveSmallIntegerField(null=True)
+    height = models.PositiveSmallIntegerField(null=True)
+    next_attempt_at = models.DateTimeField(null=True)
+    attempt_count = models.PositiveIntegerField(default=0)
+    last_error_code = models.CharField(max_length=32, blank=True)
+
+    @property
+    def object_key(self):
+        return f"{self.pk.hex}.jpg"
+
+    class Meta:
+        indexes = [models.Index(fields=["state", "lease_until", "next_attempt_at"], name="photo_cleanup_idx")]
+        constraints = [
+            models.CheckConstraint(condition=Q(state__in=["STAGED", "ATTACHED", "PENDING_DELETE"]), name="photo_state_valid"),
+            models.CheckConstraint(condition=~Q(state="ATTACHED") | Q(
+                byte_size__isnull=False, byte_size__gte=1, byte_size__lte=1048576,
+                width__isnull=False, width__gte=1, width__lte=1200,
+                height__isnull=False, height__gte=1, height__lte=1200), name="photo_attached_metadata"),
+        ]
 
 
 class Entry(models.Model):
@@ -21,6 +55,7 @@ class Entry(models.Model):
     birth_day = models.PositiveSmallIntegerField("dia", blank=True, null=True)
     birth_month = models.PositiveSmallIntegerField("mês", blank=True, null=True)
     spouse_name = models.CharField("cônjuge", max_length=200, blank=True, null=True)
+    photo = models.OneToOneField(Photo, null=True, blank=True, on_delete=models.PROTECT, editable=False)
 
     class Meta:
         verbose_name = "entrada do diretório"

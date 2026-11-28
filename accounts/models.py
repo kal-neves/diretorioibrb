@@ -71,3 +71,22 @@ class Account(AbstractBaseUser):
 
     def __str__(self):
         return self.name
+
+
+class LoginCounter(models.Model):
+    class Scope(models.TextChoices):
+        IP = "IP", "IP"
+        IDENTIFIER_IP = "IDENTIFIER_IP", "Identificador e IP"
+
+    scope = models.CharField(max_length=16, choices=Scope.choices)
+    key_digest = models.CharField(max_length=64)
+    window_started_at = models.DateTimeField()
+    expires_at = models.DateTimeField(db_index=True)
+    count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["scope", "key_digest"], name="login_counter_scope_key_unique"),
+            models.CheckConstraint(condition=Q(scope__in=["IP", "IDENTIFIER_IP"]), name="login_counter_scope_valid"),
+            models.CheckConstraint(condition=Q(expires_at__gt=F("window_started_at")), name="login_counter_window_valid"),
+        ]

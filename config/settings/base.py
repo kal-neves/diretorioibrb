@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts.apps.AccountsConfig",
     "common.apps.CommonConfig",
+    "directory.apps.DirectoryConfig",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

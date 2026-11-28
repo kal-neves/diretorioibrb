@@ -17,7 +17,7 @@ def is_expired_new_account(account, *, now=None):
 def require_manager(operator):
     if (not operator.is_active or operator.must_change_password
             or is_expired_new_account(operator) or not operator.is_staff):
-        raise PermissionDenied("Esta conta não pode administrar contas de acesso.")
+        raise PermissionDenied("Esta conta não pode realizar operações administrativas.")
 
 
 def require_manage_target(operator, target):

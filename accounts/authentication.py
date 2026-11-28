@@ -2,6 +2,7 @@ import ipaddress
 import math
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -27,8 +28,9 @@ class LoginRejected(Exception):
 
 
 def client_ip(request):
+    source = "HTTP_X_VERCEL_FORWARDED_FOR" if settings.TRUST_VERCEL_PROXY else "REMOTE_ADDR"
     try:
-        address = ipaddress.ip_address(request.META.get("REMOTE_ADDR", ""))
+        address = ipaddress.ip_address(request.META.get(source, ""))
     except ValueError:
         raise LoginRejected("Não foi possível identificar a conexão. Tente novamente.") from None
     if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped:

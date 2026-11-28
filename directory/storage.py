@@ -69,10 +69,11 @@ class SupabasePhotoStorage:
         if (parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.query or parsed.fragment
                 or parsed.path or not settings.SUPABASE_STORAGE_KEY or not settings.SUPABASE_PHOTO_BUCKET):
             raise StorageUnavailable
-        request = Request(base + "/storage/v1/" + path, data=data, method=method, headers={
-            "Authorization": "Bearer " + settings.SUPABASE_STORAGE_KEY,
-            "apikey": settings.SUPABASE_STORAGE_KEY, "Content-Type": content_type, "x-upsert": "false",
-        })
+        key = settings.SUPABASE_STORAGE_KEY
+        headers = {"apikey": key, "Content-Type": content_type, "x-upsert": "false"}
+        if not key.startswith("sb_secret_"):
+            headers["Authorization"] = "Bearer " + key
+        request = Request(base + "/storage/v1/" + path, data=data, method=method, headers=headers)
         try:
             with build_opener(NoRedirect).open(request, timeout=10) as response:
                 result = response.read(MAX_BYTES + 1)

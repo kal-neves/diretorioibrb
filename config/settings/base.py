@@ -14,6 +14,7 @@ def required(name):
 BASE_DIR = Path(__file__).resolve().parents[2]
 SECRET_KEY = required("DJANGO_SECRET_KEY")
 DEBUG = False
+TRUST_VERCEL_PROXY = False
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 MAINTENANCE_ENABLED = os.environ.get("MAINTENANCE_ENABLED") == "1"
 DEPLOYMENT_ENV = os.environ.get("VERCEL_ENV", "development")

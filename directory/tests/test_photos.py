@@ -240,6 +240,14 @@ class PhotoTests(TestCase):
 
 @override_settings(SUPABASE_URL="https://example.supabase.co", SUPABASE_STORAGE_KEY="test-secret", SUPABASE_PHOTO_BUCKET="photos")
 class StorageTests(SimpleTestCase):
+    @override_settings(SUPABASE_STORAGE_KEY="sb_secret_fixture")
+    def test_secret_key_uses_api_key_header(self):
+        with patch("directory.storage.build_opener") as opener:
+            SupabasePhotoStorage().request("GET", "bucket/photos")
+        request = opener.return_value.open.call_args.args[0]
+        self.assertEqual(request.get_header("Apikey"), "sb_secret_fixture")
+        self.assertIsNone(request.get_header("Authorization"))
+
     def test_supabase_private_bucket_checked_and_payload_contract(self):
         storage = SupabasePhotoStorage()
         with patch.object(storage, "request", side_effect=[b'{"public": false}', b'{}']) as request:

@@ -101,6 +101,16 @@ class LoginTests(TestCase):
         with self.assertRaises(LoginRejected):
             client_ip(request)
 
+    @override_settings(TRUST_VERCEL_PROXY=True)
+    def test_vercel_uses_single_platform_address(self):
+        request = RequestFactory().get("/", HTTP_X_VERCEL_FORWARDED_FOR="2001:db8::1",
+                                       HTTP_X_FORWARDED_FOR="192.0.2.1")
+        self.assertEqual(client_ip(request), "2001:db8::1")
+        for value in ("", "192.0.2.1, 192.0.2.2"):
+            request.META["HTTP_X_VERCEL_FORWARDED_FOR"] = value
+            with self.assertRaises(LoginRejected):
+                client_ip(request)
+
 
 @override_settings(PASSWORD_HASHERS=FAST_HASHERS)
 class LoginConcurrencyTests(TransactionTestCase):

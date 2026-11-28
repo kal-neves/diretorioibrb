@@ -7,6 +7,7 @@
 
 # Dependências e arquivos gerados
 .venv/
+.vercel/
 __pycache__/
 *.py[cod]
 .pytest_cache/

@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.views.decorators.debug import sensitive_variables
 
 from common.phones import normalize_phone
+from common.submissions import consume_submission
 
 from .models import Account
 from .policies import is_expired_new_account, require_assign_role, require_manage_target
@@ -54,7 +55,7 @@ def duplicate_phone_error(error):
 
 
 @sensitive_variables("password")
-def create_account(*, operator_id, name, phone, country=None, role=Account.Role.CONSULTATION):
+def create_account(*, operator_id, name, phone, country=None, role=Account.Role.CONSULTATION, submission=None):
     normalized_phone = normalize_phone(phone, country, mobile_only=True)
     password = secrets.token_urlsafe(24)
     account = Account(name=name, login_phone=normalized_phone, role=role)
@@ -63,19 +64,23 @@ def create_account(*, operator_id, name, phone, country=None, role=Account.Role.
         with transaction.atomic(durable=True):
             operator, = locked_accounts(operator_id)
             require_assign_role(operator, role)
+            confirm_submission(operator, submission, "account.create")
             save_account(account)
+            recheck_submission_session(operator, submission)
     except IntegrityError as error:
         duplicate_phone_error(error)
     return account, password
 
 
 def update_account(*, operator_id, account_id, name=None, phone=None, country=None,
-                   role=None, is_active=None):
+                   role=None, is_active=None, submission=None):
     normalized_phone = normalize_phone(phone, country, mobile_only=True) if phone is not None else None
     try:
         with transaction.atomic(durable=True):
             operator, account = locked_accounts(operator_id, account_id)
             require_manage_target(operator, account)
+            operation = "account.update" if is_active is None else "account.activate" if is_active else "account.deactivate"
+            confirm_submission(operator, submission, operation, binding=str(account_id))
             revoke = False
             if name is not None:
                 account.name = name
@@ -96,30 +101,35 @@ def update_account(*, operator_id, account_id, name=None, phone=None, country=No
             if revoke:
                 account.access_version += 1
             save_account(account)
+            recheck_submission_session(operator, submission)
     except IntegrityError as error:
         duplicate_phone_error(error)
     return account
 
 
-def delete_account(*, operator_id, account_id):
+def delete_account(*, operator_id, account_id, submission=None):
     with transaction.atomic(durable=True):
         operator, account = locked_accounts(operator_id, account_id)
         require_manage_target(operator, account)
+        confirm_submission(operator, submission, "account.delete", binding=str(account_id))
         account.delete()
+        recheck_submission_session(operator, submission)
 
 
 @sensitive_variables("password")
-def restore_password(*, operator_id, account_id):
+def restore_password(*, operator_id, account_id, submission=None):
     with transaction.atomic(durable=True):
         operator, account = locked_accounts(operator_id, account_id)
         require_manage_target(operator, account)
         if account.first_password_changed_at is None:
             raise ValidationError("Contas novas não podem receber outra senha temporária.", code="first_change_pending")
+        confirm_submission(operator, submission, "account.restore", binding=str(account_id))
         password = secrets.token_urlsafe(24)
         account.set_password(password)
         account.must_change_password = True
         account.access_version += 1
         save_account(account)
+        recheck_submission_session(operator, submission)
     return password
 
 
@@ -153,6 +163,17 @@ def require_password_session(account, expected_version, authenticated_at):
 
     if not account_session_is_current(account, expected_version, authenticated_at):
         raise PermissionDenied("A sessão não permite esta alteração. Entre novamente.")
+
+
+def confirm_submission(operator, submission, operation, *, binding=""):
+    if submission is not None:
+        recheck_submission_session(operator, submission)
+        consume_submission(submission, operation=operation, binding=binding)
+
+
+def recheck_submission_session(operator, submission):
+    if submission is not None:
+        require_password_session(operator, submission.access_version, submission.authenticated_at)
 
 
 @sensitive_variables("new_password", "confirmation")

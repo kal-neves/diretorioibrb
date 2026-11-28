@@ -16,12 +16,14 @@ SECRET_KEY = required("DJANGO_SECRET_KEY")
 DEBUG = False
 ALLOWED_HOSTS = []
 INSTALLED_APPS = [
+    "django.contrib.admin.apps.SimpleAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "accounts.apps.AccountsConfig",
+    "common.apps.CommonConfig",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

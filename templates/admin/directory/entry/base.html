@@ -1,0 +1,7 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrahead %}{{ block.super }}<script src="{% static 'accounts/admin_forms.js' %}" defer></script>{% endblock %}
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Administração</a> &rsaquo;
+<a href="{{ list_url }}">Entradas do diretório</a> &rsaquo; {{ title }}</div>
+{% endblock %}

@@ -1,0 +1,4 @@
+<h2>Diretório</h2>
+{% include "directory/filters.html" %}
+{% for card in page.items %}{% include "directory/card.html" %}{% empty %}<p>Nenhuma entrada encontrada.</p>{% endfor %}
+{% include "directory/pagination.html" %}

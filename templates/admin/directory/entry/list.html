@@ -1,0 +1,13 @@
+{% extends "admin/directory/entry/base.html" %}
+{% block content %}
+<p><a href="{% url 'admin:directory_entry_add' %}">Adicionar entrada</a> | <a href="{% url 'directory:index' %}">Consultar diretório</a></p>
+{% include "directory/filters.html" %}
+<table><thead><tr><th>Nome</th><th>Contato</th><th>Categoria</th><th>Aniversário</th><th>Ações</th></tr></thead><tbody>
+{% for card in page.items %}<tr>
+  <td>{{ card.name }}</td><td>{{ card.contact_phone|default_if_none:"" }}</td><td>{{ card.category_label }}</td>
+  <td>{% if card.birth_day %}{{ card.birth_day|stringformat:"02d" }}/{{ card.birth_month|stringformat:"02d" }}{% endif %}</td>
+  <td><a href="{% url 'admin:directory_entry_change' card.id %}">Editar</a> | <a href="{% url 'admin:directory_entry_delete' card.id %}">Excluir</a></td>
+</tr>{% empty %}<tr><td colspan="5">Nenhuma entrada encontrada.</td></tr>{% endfor %}
+</tbody></table>
+{% include "directory/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+{% block title %}Diretório IBRB{% endblock %}
+{% block content %}
+<h1>Diretório IBRB</h1>
+<nav aria-label="Conta"><a href="{% url 'accounts:password' %}">Minha senha</a>
+{% if request.user.is_staff %}<a href="{% url 'admin:index' %}">Administração</a>{% endif %}
+<form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button type="submit">Sair</button></form></nav>
+<section aria-label="Resumo da membresia"><p>Total: {{ totals.total }}. Membros: {{ totals.members }}. Pastores: {{ totals.pastors }}. Diáconos: {{ totals.deacons }}.</p></section>
+<p data-directory-error role="alert" hidden></p>
+<section data-directory-region="listing" data-fragment-url="{% url 'directory:listing' %}" aria-live="polite">{% include "directory/list.html" %}</section>
+<section data-directory-region="birthdays" data-fragment-url="{% url 'directory:birthdays' %}" aria-live="polite">{% include "directory/birthdays.html" %}</section>
+<script src="{% static 'directory/directory.js' %}" defer></script>
+{% endblock %}

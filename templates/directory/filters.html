@@ -1,0 +1,11 @@
+<form method="get" action="{{ list_url|default:request.path }}">
+  <label for="directory-query">Buscar por nome</label>
+  <input id="directory-query" name="q" value="{{ page.query }}" type="search">
+  <label for="directory-category">Categoria</label>
+  <select id="directory-category" name="category">
+    <option value="">Todas</option>
+    {% for value, label in categories %}<option value="{{ value }}"{% if page.category == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  {% if birthday_list %}<input type="hidden" name="month" value="{{ birthday_list.month }}">{% endif %}
+  <button type="submit">Buscar</button>
+</form>

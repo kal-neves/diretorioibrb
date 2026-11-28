@@ -1,0 +1,10 @@
+<h2>Aniversariantes de {{ month_name }}</h2>
+<form method="get" action="{% url 'directory:index' %}">
+  <label for="birthday-month">Mês</label>
+  <select id="birthday-month" name="month">
+    {% for number, label in months %}<option value="{{ number }}"{% if number == birthday_list.month %} selected{% endif %}>{{ label }}{% if number == current_month %} (mês atual){% endif %}</option>{% endfor %}
+  </select>
+  {% if page %}<input type="hidden" name="q" value="{{ page.query }}"><input type="hidden" name="category" value="{{ page.category }}"><input type="hidden" name="page" value="{{ page.number }}">{% endif %}
+  <button type="submit">Ver mês</button>
+</form>
+{% for card in birthday_list.items %}{% include "directory/card.html" %}{% empty %}<p>Nenhum aniversário cadastrado neste mês.</p>{% endfor %}

@@ -1,0 +1,5 @@
+<nav aria-label="Páginas do diretório">
+  {% if page.previous_page %}<a href="?q={{ page.query|urlencode }}&amp;category={{ page.category|urlencode }}&amp;page={{ page.previous_page }}{% if birthday_list %}&amp;month={{ birthday_list.month }}{% endif %}">Anterior</a>{% endif %}
+  <span>Página {{ page.number }}. {{ page.total }} entradas encontradas.</span>
+  {% if page.next_page %}<a href="?q={{ page.query|urlencode }}&amp;category={{ page.category|urlencode }}&amp;page={{ page.next_page }}{% if birthday_list %}&amp;month={{ birthday_list.month }}{% endif %}">Próxima</a>{% endif %}
+</nav>

@@ -23,6 +23,23 @@ class DirectoryCard:
     birth_month: int | None
     spouse_name: str | None
 
+    @property
+    def category_label(self):
+        return Entry.Category(self.category).label
+
+    @property
+    def whatsapp_url(self):
+        if not self.contact_phone:
+            return None
+        import phonenumbers
+
+        number = phonenumbers.parse(self.contact_phone, None)
+        if phonenumbers.number_type(number) in {
+            phonenumbers.PhoneNumberType.MOBILE, phonenumbers.PhoneNumberType.FIXED_LINE_OR_MOBILE,
+        }:
+            return f"https://wa.me/{self.contact_phone.lstrip('+')}"
+        return None
+
 
 @dataclass(frozen=True)
 class DirectoryPage:

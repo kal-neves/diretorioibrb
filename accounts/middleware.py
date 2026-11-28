@@ -64,6 +64,8 @@ class AccessMiddleware(MiddlewareMixin):
             return unavailable(request)
 
     def check_access(self, request, view):
+        if getattr(view, "operational_route", False):
+            return None
         had_session = SESSION_KEY in request.session
         if not session_is_current(request):
             if had_session:

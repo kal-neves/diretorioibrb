@@ -14,6 +14,9 @@ def required(name):
 BASE_DIR = Path(__file__).resolve().parents[2]
 SECRET_KEY = required("DJANGO_SECRET_KEY")
 DEBUG = False
+CRON_SECRET = os.environ.get("CRON_SECRET", "")
+MAINTENANCE_ENABLED = os.environ.get("MAINTENANCE_ENABLED") == "1"
+DEPLOYMENT_ENV = os.environ.get("VERCEL_ENV", "development")
 PHOTO_STORAGE_BACKEND = os.environ.get("PHOTO_STORAGE_BACKEND", "disabled")
 PHOTO_STORAGE_ROOT = None
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")

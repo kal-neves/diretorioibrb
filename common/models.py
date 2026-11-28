@@ -17,3 +17,14 @@ class FormSubmission(models.Model):
             models.CheckConstraint(condition=Q(consumed_at__isnull=True) | Q(consumed_at__gte=F("created_at")),
                                    name="submission_consumed_after_creation"),
         ]
+
+
+class RoutineState(models.Model):
+    key = models.CharField(max_length=40, primary_key=True)
+    run_token = models.UUIDField(null=True)
+    lease_until = models.DateTimeField(null=True)
+    last_started_at = models.DateTimeField(null=True)
+    last_succeeded_at = models.DateTimeField(null=True)
+    status = models.CharField(max_length=16, default="pending")
+    counts = models.JSONField(default=dict)
+    last_error_code = models.CharField(max_length=40, blank=True)

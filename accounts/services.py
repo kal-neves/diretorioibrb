@@ -197,11 +197,17 @@ def complete_required_password_change(*, account_id, expected_version, authentic
     return account
 
 
-def delete_expired_new_accounts(*, batch_size=100):
+def delete_expired_new_accounts(*, batch_size=100, max_batches=None):
     if not isinstance(batch_size, int) or batch_size < 1:
         raise ValueError("O tamanho do lote deve ser positivo.")
+    if max_batches is not None and (not isinstance(max_batches, int) or max_batches < 1):
+        raise ValueError("O limite de lotes deve ser positivo.")
     deleted = 0
+    batches = 0
     while True:
+        if max_batches is not None and batches >= max_batches:
+            return deleted
+        batches += 1
         with transaction.atomic(durable=True):
             cutoff = timezone.now() - timedelta(days=7)
             accounts = list(Account.objects.select_for_update(skip_locked=True)
@@ -213,3 +219,16 @@ def delete_expired_new_accounts(*, batch_size=100):
                 if is_expired_new_account(account):
                     account.delete()
                     deleted += 1
+
+
+@sensitive_variables("password")
+def recover_initial_admin():
+    password = secrets.token_urlsafe(24)
+    with transaction.atomic(durable=True):
+        account = Account.objects.select_for_update().filter(seed_username="adminseed", role=Account.Role.INITIAL_ADMIN).first()
+        if account is None:
+            raise ValidationError("O administrador inicial não existe. Use seed_admin para inicializar.")
+        account.set_password(password)
+        account.access_version += 1
+        account.save(update_fields=["password", "access_version"])
+    return password

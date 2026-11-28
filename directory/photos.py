@@ -33,18 +33,23 @@ def attach_photo(entry, staged=None, remove=False):
         entry.photo_id = staged.pk if staged else None
 
 
+def due_photos():
+    now = timezone.now()
+    return (Photo.objects.filter(Q(state=Photo.State.STAGED, lease_until__lte=now)
+                                 | Q(state=Photo.State.PENDING_DELETE))
+            .filter(Q(lease_until__isnull=True) | Q(lease_until__lte=now))
+            .filter(Q(next_attempt_at__isnull=True) | Q(next_attempt_at__lte=now))
+            .exclude(entry__isnull=False))
+
+
 def cleanup_photos(*, limit=100):
     removed = 0
     storage = photo_storage()
     for _ in range(limit):
         now = timezone.now()
         with transaction.atomic():
-            candidate = (Photo.objects.select_for_update(skip_locked=True, of=("self",))
-                         .filter(Q(state=Photo.State.STAGED, lease_until__lte=now)
-                                 | Q(state=Photo.State.PENDING_DELETE))
-                         .filter(Q(lease_until__isnull=True) | Q(lease_until__lte=now))
-                         .filter(Q(next_attempt_at__isnull=True) | Q(next_attempt_at__lte=now))
-                         .exclude(entry__isnull=False).order_by("created_at").first())
+            candidate = (due_photos().select_for_update(skip_locked=True, of=("self",))
+                         .order_by("created_at").first())
             if candidate is None:
                 break
             candidate.state = Photo.State.PENDING_DELETE

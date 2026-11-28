@@ -1,5 +1,6 @@
 <article>
   <h3>{{ card.name }}</h3>
+  {% if card.photo_id %}<img src="{% url 'directory:photo' card.id card.photo_id %}" alt="Foto de {{ card.name }}" loading="lazy" style="max-width: 200px; max-height: 200px">{% endif %}
   <p>{{ card.category_label }}</p>
   {% if card.contact_phone %}<p>Contato: <a href="tel:{{ card.contact_phone }}">{{ card.contact_phone }}</a>
   {% if card.whatsapp_url %}<a href="{{ card.whatsapp_url }}" target="_blank" rel="noopener noreferrer">Abrir no WhatsApp (serviço externo)</a>{% endif %}</p>{% endif %}

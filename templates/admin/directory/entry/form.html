@@ -1,9 +1,16 @@
 {% extends "admin/directory/entry/base.html" %}
+{% load static %}
+{% block extrahead %}{{ block.super }}<script src="{% static 'directory/photo_processing.js' %}" defer></script><script src="{% static 'directory/photo_editor.js' %}" defer></script>{% endblock %}
 {% block content %}
 {% if deleting %}<p>Excluir definitivamente {{ entry.name }}? A entrada será removida do diretório, dos aniversariantes e dos totais.</p>{% endif %}
-<form method="post" data-single-submit>
+<form method="post" enctype="multipart/form-data" data-single-submit>
   {% csrf_token %}
   {{ form.as_p }}
+  {% if photo_reselect %}<p>A nova foto não foi salva. Selecione e confirme o recorte novamente.</p>{% endif %}
+  {% if not deleting %}
+  {% if entry.photo_id %}<p>Foto atual</p><img src="{% url 'directory:photo' entry.pk entry.photo_id %}" alt="Foto atual" style="max-width:200px">{% endif %}
+  {% include "admin/directory/entry/photo_editor.html" %}
+  {% endif %}
   <button type="submit">{% if deleting %}Excluir definitivamente{% else %}Salvar entrada{% endif %}</button>
   <a href="{{ list_url }}">Cancelar</a>
 </form>

@@ -1,0 +1,17 @@
+<div data-photo-editor>
+  <noscript><p>Ative o JavaScript para selecionar e recortar fotos. Os demais campos podem ser salvos normalmente.</p></noscript>
+  <label>Escolher foto <input type="file" accept="image/jpeg,image/png,image/webp" data-original></label>
+  <p>JPEG, PNG ou WebP estáticos, até 10 MiB e 25 milhões de pixels. Apenas o recorte reduzido será enviado. A foto só muda ao salvar a entrada.</p>
+  <p data-photo-status role="status"></p>
+  <img data-photo-preview alt="Prévia do novo recorte" hidden style="max-width:200px">
+  <dialog data-photo-dialog aria-label="Recortar foto">
+    <p>Arraste sobre a imagem para selecionar. Ajuste a posição e o tamanho pelos controles.</p>
+    <canvas data-photo-canvas style="max-width:100%;touch-action:none"></canvas>
+    <p><label>Posição horizontal <input type="range" data-crop="x" min="0" value="0"></label></p>
+    <p><label>Posição vertical <input type="range" data-crop="y" min="0" value="0"></label></p>
+    <p><label>Largura <input type="range" data-crop="width" min="1"></label></p>
+    <p><label>Altura <input type="range" data-crop="height" min="1"></label></p>
+    <button type="button" data-use-crop>Usar este recorte</button>
+    <button type="button" data-cancel-crop>Cancelar</button>
+  </dialog>
+</div>
